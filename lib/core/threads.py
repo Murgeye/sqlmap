@@ -104,10 +104,10 @@ def exceptionHandledFunction(threadFunction, silent=False):
 
         if not silent and kb.get("threadContinue") and not kb.get("multipleCtrlC") and not isinstance(ex, (SqlmapUserQuitException, SqlmapSkipTargetException)):
             errMsg = getSafeExString(ex) if isinstance(ex, SqlmapBaseException) else "%s: %s" % (type(ex).__name__, getSafeExString(ex))
-            logger.error("thread %s: '%s'" % (threading.currentThread().getName(), errMsg))
 
             if conf.get("verbose") > 1 and not isinstance(ex, SqlmapConnectionException):
-                traceback.print_exc()
+                errMsg += "\n %s" % traceback.format_exc()
+            logger.error("thread %s: '%s'" % (threading.currentThread().getName(), errMsg))
 
 def setDaemon(thread):
     # Reference: http://stackoverflow.com/questions/190010/daemon-threads-explanation

@@ -371,6 +371,8 @@ def start():
 
             if not testSqlInj:
                 infoMsg = "skipping '%s'" % targetUrl
+                if paramKey in kb.testedParams:
+                    infoMsg += " because all parameters were already tested"
                 logger.info(infoMsg)
                 continue
 
