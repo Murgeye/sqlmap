@@ -2773,7 +2773,7 @@ def _basicOptionValidation():
             logger.warning(warnMsg)
 
 
-    if conf.cookieDel and len(conf.cookieDel):
+    if conf.cookieDel and len(conf.cookieDel) != 1:
         errMsg = "option '--cookie-del' should contain a single character (e.g. ';')"
         raise SqlmapSyntaxException(errMsg)
 
@@ -2829,6 +2829,10 @@ def _basicOptionValidation():
 
     if conf.csrfMethod and not conf.csrfToken:
         errMsg = "option '--csrf-method' requires usage of option '--csrf-token'"
+        raise SqlmapSyntaxException(errMsg)
+
+    if conf.csrfData and not conf.csrfToken:
+        errMsg = "option '--csrf-data' requires usage of option '--csrf-token'"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.csrfToken and conf.threads > 1:
