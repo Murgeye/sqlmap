@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -308,7 +308,7 @@ class Connect(object):
             threadData.lastRequestUID = kb.requestCounter
 
             if conf.proxyFreq:
-                if kb.requestCounter % conf.proxyFreq == 1:
+                if kb.requestCounter % conf.proxyFreq == 0:
                     conf.proxy = None
 
                     warnMsg = "changing proxy"

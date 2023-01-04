@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -664,6 +664,9 @@ def cmdLineParser(argv=None):
         general.add_argument("--charset", dest="charset",
             help="Blind SQL injection charset (e.g. \"0123456789abcdef\")")
 
+        general.add_argument("--dump-file", dest="dumpFile",
+            help="Store dumped data to a custom file")
+
         general.add_argument("--dump-format", dest="dumpFormat",
             help="Format of dumped data (CSV (default), HTML or SQLITE)")
 
@@ -837,6 +840,9 @@ def cmdLineParser(argv=None):
             help=SUPPRESS)
 
         parser.add_argument("--vuln-test", dest="vulnTest", action="store_true",
+            help=SUPPRESS)
+
+        parser.add_argument("--disable-json", dest="disableJson", action="store_true",
             help=SUPPRESS)
 
         # API options

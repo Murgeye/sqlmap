@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2022 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -416,6 +416,9 @@ def _doSearch():
                 conf.googlePage += 1
 
 def _setStdinPipeTargets():
+    if conf.url:
+        return
+
     if isinstance(conf.stdinPipe, _collections.Iterable):
         infoMsg = "using 'STDIN' for parsing targets list"
         logger.info(infoMsg)
@@ -2191,7 +2194,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.lastParserStatus = None
 
     kb.locks = AttribDict()
-    for _ in ("cache", "connError", "count", "handlers", "hint", "index", "io", "limit", "liveCookies", "log", "socket", "redirect", "request", "value"):
+    for _ in ("cache", "connError", "count", "handlers", "hint", "identYwaf", "index", "io", "limit", "liveCookies", "log", "socket", "redirect", "request", "value"):
         kb.locks[_] = threading.Lock()
 
     kb.matchRatio = None
@@ -2263,7 +2266,6 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.testType = None
     kb.threadContinue = True
     kb.threadException = False
-    kb.tlsSNI = {}
     kb.uChar = NULL
     kb.udfFail = False
     kb.unionDuplicates = False
