@@ -39,6 +39,7 @@ optDict = {
         "authType": "string",
         "authCred": "string",
         "authFile": "string",
+        "abortCode": "string",
         "ignoreCode": "string",
         "ignoreProxy": "boolean",
         "ignoreRedirects": "boolean",
@@ -204,6 +205,7 @@ optDict = {
 
     "General": {
         "trafficFile": "string",
+        "abortOnEmpty": "boolean",
         "answers": "string",
         "batch": "boolean",
         "base64Parameter": "string",
