@@ -912,7 +912,7 @@ def _setTamperingFunctions():
             priority = PRIORITY.NORMAL if not hasattr(module, "__priority__") else module.__priority__
 
             for name, function in inspect.getmembers(module, inspect.isfunction):
-                if name == "tamper" and (hasattr(inspect, "signature") and all(_ in inspect.signature(function).parameters for _ in ("payload", "kwargs")) or hasattr(inspect, "getargspec") and inspect.getargspec(function).args and inspect.getargspec(function).keywords == "kwargs"):
+                if name == "tamper" and (hasattr(inspect, "signature") and all(_ in inspect.signature(function).parameters for _ in ("payload", "kwargs")) or inspect.getargspec(function).args and inspect.getargspec(function).keywords == "kwargs"):
                     found = True
                     kb.tamperFunctions.append(function)
                     function.__name__ = module.__name__
@@ -2242,6 +2242,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.prependFlag = False
     kb.processResponseCounter = 0
     kb.previousMethod = None
+    kb.processNonCustom = None
     kb.processUserMarks = None
     kb.proxyAuthHeader = None
     kb.queryCounter = 0
