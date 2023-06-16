@@ -62,14 +62,16 @@ def crawl(target, post=None, cookie=None):
                             for function in kb.urlTamperFunctions:
                                 hints = {}
                                 try:
+                                    nonlocal post
                                     oldUrl = current
-                                    current = function(url=current, hints=hints)
+                                    current, post_data = function(url=current, hints=hints, post_data=post)
                                     if current != oldUrl:
                                         logger.debug("Rewrote %s to %s" % (repr(oldUrl), repr(current)))
+                                    post = post_data
                                 except Exception as ex:
                                     errMsg = "error occurred while running URL tamper "
                                     errMsg += "function '%s' ('%s')" % (function.__name__, getSafeExString(ex))
-                                    logger.critical(errMsg)
+                                    logger.exception(errMsg)
 
                                 if not isinstance(current, six.string_types):
                                     errMsg = "tamper function '%s' returns " % function.__name__

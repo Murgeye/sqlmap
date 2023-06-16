@@ -4769,6 +4769,28 @@ def findPageForms(content, url, raise_=False, addToTargets=False):
 
     if addToTargets and retVal:
         for target in retVal:
+            if kb.urlTamperFunctions:
+                url, method, data, cookie, last = target
+                for function in kb.urlTamperFunctions:
+                    hints = {}
+                    try:
+                        oldUrl = url
+                        url, post_data = function(url=oldUrl, hints=hints, post_data=data)
+                        if url != oldUrl:
+                            logger.debug("Rewrote %s to %s" % (repr(oldUrl), repr(url)))
+                        data = post_data
+                        if data is None:
+                            method = HTTPMETHOD.GET
+                    except Exception as ex:
+                        errMsg = "error occurred while running URL tamper "
+                        errMsg += "function '%s' ('%s')" % (function.__name__, getSafeExString(ex))
+                        logger.exception(errMsg)
+
+                    if not isinstance(url, six.string_types):
+                        errMsg = "tamper function '%s' returns " % function.__name__
+                        errMsg += "invalid payload type ('%s')" % type(payload)
+                        logger.critical(errMsg)
+                    target = url, method, data, cookie, last
             kb.targets.add(target)
 
     return retVal
