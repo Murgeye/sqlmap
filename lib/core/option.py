@@ -1898,6 +1898,9 @@ def _cleanupOptions():
                     conf.dbms = dbms if conf.dbms and ',' not in conf.dbms else None
                     break
 
+    if conf.uValues:
+        conf.uCols = "%d-%d" % (1 + conf.uValues.count(','), 1 + conf.uValues.count(','))
+
     if conf.testFilter:
         conf.testFilter = conf.testFilter.strip('*+')
         conf.testFilter = re.sub(r"([^.])([*+])", r"\g<1>.\g<2>", conf.testFilter)
@@ -2265,6 +2268,7 @@ def _setKnowledgeBaseAttributes(flushAll=True):
     kb.smokeMode = False
     kb.reduceTests = None
     kb.sslSuccess = False
+    kb.startTime = time.time()
     kb.stickyDBMS = False
     kb.suppressResumeInfo = False
     kb.tableFrom = None
@@ -2680,6 +2684,10 @@ def _basicOptionValidation():
         errMsg = "switch '--text-only' is incompatible with switch '--null-connection'"
         raise SqlmapSyntaxException(errMsg)
 
+    if conf.uValues and conf.uChar:
+        errMsg = "option '--union-values' is incompatible with option '--union-char'"
+        raise SqlmapSyntaxException(errMsg)
+
     if conf.base64Parameter and conf.tamper:
         errMsg = "option '--base64' is incompatible with option '--tamper'"
         raise SqlmapSyntaxException(errMsg)
@@ -2902,6 +2910,11 @@ def _basicOptionValidation():
         errMsg = "option '--dump-format' accepts one of following values: %s" % ", ".join(getPublicTypeMembers(DUMP_FORMAT, True))
         raise SqlmapSyntaxException(errMsg)
 
+    if conf.uValues and (not re.search(r"\A['\w\s.,()%s-]+\Z" % CUSTOM_INJECTION_MARK_CHAR, conf.uValues) or conf.uValues.count(CUSTOM_INJECTION_MARK_CHAR) != 1):
+        errMsg = "option '--union-values' must contain valid UNION column values, along with the injection position "
+        errMsg += "(e.g. 'NULL,1,%s,NULL')" % CUSTOM_INJECTION_MARK_CHAR
+        raise SqlmapSyntaxException(errMsg)
+
     if conf.skip and conf.testParameter:
         if intersect(conf.skip, conf.testParameter):
             errMsg = "option '--skip' is incompatible with option '-p'"
@@ -2926,10 +2939,6 @@ def _basicOptionValidation():
 
     if conf.timeSec < 1:
         errMsg = "value for option '--time-sec' must be a positive integer"
-        raise SqlmapSyntaxException(errMsg)
-
-    if conf.uChar and not re.match(UNION_CHAR_REGEX, conf.uChar):
-        errMsg = "value for option '--union-char' must be an alpha-numeric value (e.g. 1)"
         raise SqlmapSyntaxException(errMsg)
 
     if conf.hashFile and any((conf.direct, conf.url, conf.logFile, conf.bulkFile, conf.googleDork, conf.configFile, conf.requestFile, conf.updateAll, conf.smokeTest, conf.wizard, conf.dependencies, conf.purge, conf.listTampers)):

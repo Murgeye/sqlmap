@@ -414,6 +414,9 @@ def cmdLineParser(argv=None):
         techniques.add_argument("--union-from", dest="uFrom",
             help="Table to use in FROM part of UNION query SQL injection")
 
+        techniques.add_argument("--union-values", dest="uValues",
+            help="Column values to use for UNION query SQL injection")
+
         techniques.add_argument("--dns-domain", dest="dnsDomain",
             help="Domain name used for DNS exfiltration attack")
 
@@ -736,6 +739,9 @@ def cmdLineParser(argv=None):
         general.add_argument("--test-skip", dest="testSkip",
             help="Skip tests by payloads and/or titles (e.g. BENCHMARK)")
 
+        general.add_argument("--time-limit", dest="timeLimit", type=float,
+            help="Run with a time limit in seconds (e.g. 3600)")
+
         general.add_argument("--web-root", dest="webRoot",
             help="Web server document root directory (e.g. \"/var/www\")")
 
@@ -1004,6 +1010,9 @@ def cmdLineParser(argv=None):
                 argv[i] = argv[i].replace("--auth-creds", "--auth-cred", 1)
             elif argv[i].startswith("--drop-cookie"):
                 argv[i] = argv[i].replace("--drop-cookie", "--drop-set-cookie", 1)
+            elif re.search(r"\A--tamper[^=\s]", argv[i]):
+                argv[i] = ""
+                continue
             elif re.search(r"\A(--(tamper|ignore-code|skip))(?!-)", argv[i]):
                 key = re.search(r"\-?\-(\w+)\b", argv[i]).group(1)
                 index = auxIndexes.get(key, None)

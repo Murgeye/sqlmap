@@ -122,6 +122,7 @@ from lib.core.settings import PLAIN_TEXT_CONTENT_TYPE
 from lib.core.settings import RANDOM_INTEGER_MARKER
 from lib.core.settings import RANDOM_STRING_MARKER
 from lib.core.settings import REPLACEMENT_MARKER
+from lib.core.settings import SAFE_HEX_MARKER
 from lib.core.settings import TEXT_CONTENT_TYPE_REGEX
 from lib.core.settings import UNENCODED_ORIGINAL_VALUE
 from lib.core.settings import UNICODE_ENCODING
@@ -441,7 +442,7 @@ class Connect(object):
             requestMsg += " %s" % _http_client.HTTPConnection._http_vsn_str
 
             # Prepare HTTP headers
-            headers = forgeHeaders({HTTP_HEADER.COOKIE: cookie, HTTP_HEADER.USER_AGENT: ua, HTTP_HEADER.REFERER: referer, HTTP_HEADER.HOST: getHostHeader(url)}, base=None if target else {})
+            headers = forgeHeaders({HTTP_HEADER.COOKIE: cookie, HTTP_HEADER.USER_AGENT: ua, HTTP_HEADER.REFERER: referer, HTTP_HEADER.HOST: getHeader(dict(conf.httpHeaders), HTTP_HEADER.HOST) or getHostHeader(url)}, base=None if target else {})
 
             if HTTP_HEADER.COOKIE in headers:
                 cookie = headers[HTTP_HEADER.COOKIE]
@@ -641,7 +642,7 @@ class Connect(object):
                     responseHeaders = conn.info()
                     responseHeaders[URI_HTTP_HEADER] = conn.geturl() if hasattr(conn, "geturl") else url
 
-                    if hasattr(conn, "redurl"):
+                    if getattr(conn, "redurl", None) is not None:
                         responseHeaders[HTTP_HEADER.LOCATION] = conn.redurl
 
                     responseHeaders = patchHeaders(responseHeaders)
@@ -1069,7 +1070,9 @@ class Connect(object):
                 if kb.postHint in (POST_HINT.SOAP, POST_HINT.XML):
                     # payloads in SOAP/XML should have chars > and < replaced
                     # with their HTML encoded counterparts
+                    payload = payload.replace("&#", SAFE_HEX_MARKER)
                     payload = payload.replace('&', "&amp;").replace('>', "&gt;").replace('<', "&lt;").replace('"', "&quot;").replace("'", "&apos;")  # Reference: https://stackoverflow.com/a/1091953
+                    payload = payload.replace(SAFE_HEX_MARKER, "&#")
                 elif kb.postHint == POST_HINT.JSON:
                     payload = escapeJsonValue(payload)
                 elif kb.postHint == POST_HINT.JSON_LIKE:
