@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2024 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -41,6 +41,8 @@ class Fingerprint(GenericFingerprint):
                 fork = FORK.ENTERPRISEDB
             elif inject.checkBooleanExpression("VERSION() LIKE '%YB-%'"):           # Reference: https://github.com/yugabyte/yugabyte-db/issues/2447#issue-499562926
                 fork = FORK.YUGABYTEDB
+            elif inject.checkBooleanExpression("VERSION() LIKE '%openGauss%'"):
+                fork = FORK.OPENGAUSS
             elif inject.checkBooleanExpression("AURORA_VERSION() LIKE '%'"):        # Reference: https://aws.amazon.com/premiumsupport/knowledge-center/aurora-version-number/
                 fork = FORK.AURORA
             else:

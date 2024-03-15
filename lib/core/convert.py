@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Copyright (c) 2006-2023 sqlmap developers (https://sqlmap.org/)
+Copyright (c) 2006-2024 sqlmap developers (https://sqlmap.org/)
 See the file 'LICENSE' for copying permission
 """
 
@@ -134,6 +134,23 @@ def dejsonize(data):
     """
 
     return json.loads(data)
+
+def rot13(data):
+    """
+    Returns ROT13 encoded/decoded text
+
+    >>> rot13('foobar was here!!')
+    'sbbone jnf urer!!'
+    >>> rot13('sbbone jnf urer!!')
+    'foobar was here!!'
+    """
+
+    # Reference: https://stackoverflow.com/a/62662878
+    retVal = ""
+    alphabit = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    for char in data:
+        retVal += alphabit[alphabit.index(char) + 13] if char in alphabit else char
+    return retVal
 
 def decodeHex(value, binary=True):
     """
