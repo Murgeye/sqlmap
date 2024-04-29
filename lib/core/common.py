@@ -711,8 +711,16 @@ def paramToDict(place, parameters=None):
                                                 if value:
                                                     walk(head, value)
 
-                                deserialized = json.loads(testableParameters[parameter])
-                                walk(deserialized)
+                                # NOTE: for cases with custom injection marker(s) inside (e.g. https://github.com/sqlmapproject/sqlmap/issues/4137#issuecomment-2013783111) - p.s. doesn't care too much about the structure (e.g. injection into the flat array values)
+                                if CUSTOM_INJECTION_MARK_CHAR in testableParameters[parameter]:
+                                    for match in re.finditer(r'(\w+)[^\w]*"\s*:[^\w]*\w*%s' % re.escape(CUSTOM_INJECTION_MARK_CHAR), testableParameters[parameter]):
+                                        key = match.group(1)
+                                        value = testableParameters[parameter].replace(match.group(0), match.group(0).replace(CUSTOM_INJECTION_MARK_CHAR, BOUNDED_INJECTION_MARKER))
+                                        candidates["%s (%s)" % (parameter, key)] = re.sub(r"\b(%s\s*=\s*)%s" % (re.escape(parameter), re.escape(testableParameters[parameter])), r"\g<1>%s" % value, parameters)
+
+                                if not candidates:
+                                    deserialized = json.loads(testableParameters[parameter])
+                                    walk(deserialized)
 
                                 if candidates:
                                     message = "it appears that provided value for %sparameter '%s' " % ("%s " % place if place != parameter else "", parameter)
@@ -1325,7 +1333,10 @@ def isZipFile(filename):
 
     checkFile(filename)
 
-    return openFile(filename, "rb", encoding=None).read(len(ZIP_HEADER)) == ZIP_HEADER
+    with openFile(filename, "rb", encoding=None) as f:
+        header = f.read(len(ZIP_HEADER))
+
+    return header == ZIP_HEADER
 
 def isDigit(value):
     """
@@ -2525,21 +2536,22 @@ def initCommonOutputs():
     kb.commonOutputs = {}
     key = None
 
-    for line in openFile(paths.COMMON_OUTPUTS, 'r'):
-        if line.find('#') != -1:
-            line = line[:line.find('#')]
+    with openFile(paths.COMMON_OUTPUTS, 'r') as f:
+        for line in f:
+            if line.find('#') != -1:
+                line = line[:line.find('#')]
 
-        line = line.strip()
+            line = line.strip()
 
-        if len(line) > 1:
-            if line.startswith('[') and line.endswith(']'):
-                key = line[1:-1]
-            elif key:
-                if key not in kb.commonOutputs:
-                    kb.commonOutputs[key] = set()
+            if len(line) > 1:
+                if line.startswith('[') and line.endswith(']'):
+                    key = line[1:-1]
+                elif key:
+                    if key not in kb.commonOutputs:
+                        kb.commonOutputs[key] = set()
 
-                if line not in kb.commonOutputs[key]:
-                    kb.commonOutputs[key].add(line)
+                    if line not in kb.commonOutputs[key]:
+                        kb.commonOutputs[key].add(line)
 
 def getFileItems(filename, commentPrefix='#', unicoded=True, lowercase=False, unique=False):
     """
@@ -5608,7 +5620,9 @@ def checkSums():
                 expected, filename = match.groups()
                 filepath = os.path.join(paths.SQLMAP_ROOT_PATH, filename).replace('/', os.path.sep)
                 checkFile(filepath)
-                if not hashlib.sha256(open(filepath, "rb").read()).hexdigest() == expected:
+                with open(filepath, "rb") as f:
+                    content = f.read()
+                if not hashlib.sha256(content).hexdigest() == expected:
                     retVal &= False
                     break
 
